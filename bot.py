@@ -9,6 +9,8 @@ from ai import generate_summary
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
+if not TOKEN:
+    raise ValueError("TELEGRAM_TOKEN is missing or empty in the .env file!")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Hi! Send me the link to your article and I will summarize it for you!")
@@ -22,14 +24,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             await update.message.reply_text("Send me only the link to the article, not a text!")
             return
         
-        await update.message.reply_chat_action(action="typing")
+        await update.message.reply_text("Thinking...")
 
         content = await get_content(url)
         if "Error: " in content:
             await update.message.reply_text("There was some error during content generation, please try again!")
             return
         summary = await generate_summary(content)
-        await update.message.reply_text(summary, parse_mode="Markdown")
+        await update.message.reply_text(summary)
     except Exception as e:
         await update.message.reply_text("There was an unexpected error! Sorry for the issue, try again later.")
         print(f"Error: {e}")
